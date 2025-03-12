@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "3000:3000"
+        environment:
+            - DATABASE_URL=postgresql://postgres:postgres@db:5432/compopedia?schema=public
+            - NEXTAUTH_URL=http://localhost:3000
+            - NEXTAUTH_SECRET=your-nextauth-secret-here # In Produktion mit einem sicheren Secret ersetzen
+        depends_on:
+            - db
+        networks:
+            - compopedia-network
+        restart: always
+
+    db:
+        image: postgres:15
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=compopedia
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        networks:
+            - compopedia-network
+        restart: always
+
+networks:
+    compopedia-network:
+        driver: bridge
+
+volumes:
+    postgres-data:
