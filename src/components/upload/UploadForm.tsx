@@ -38,8 +38,10 @@ export default function UploadForm({ initialData }: UploadFormProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [images, setImages] = useState<File[]>([]);
     const [isNewCategory, setIsNewCategory] = useState(false);
+    const [imageUrls, setImageUrls] = useState<string[]>(initialData?.images ? initialData.images.map((img) => img.url) : []);
 
     const {
         register,
@@ -101,29 +103,21 @@ export default function UploadForm({ initialData }: UploadFormProps) {
         setError(null);
 
         try {
-            // Bilder hochladen und URLs erhalten
-            const uploadedImages = await Promise.all(
-                images.map(async (file) => {
-                    // Hier würde normalerweise der Upload zu einem Cloud Storage erfolgen
-                    // Für dieses Beispiel simulieren wir einen erfolgreichen Upload
-                    const url = URL.createObjectURL(file);
-                    return { url };
-                })
-            );
+            // Wir brauchen uploadedImages nicht mehr, da wir direkt imageUrls verwenden
+            // Entferne die uploadedImages-Variable und den betreffenden Code
 
             const componentData = {
                 ...data,
                 userId: session.user.id,
-                images: uploadedImages,
+                images: imageUrls.map((url) => ({ url })),
             };
+            console.log("Component data being sent:", componentData);
 
             let response;
 
             if (initialData) {
-                // Komponente aktualisieren
                 response = await axios.put(`/api/components/${initialData.id}`, componentData);
             } else {
-                // Neue Komponente erstellen
                 response = await axios.post("/api/components", componentData);
             }
 
@@ -136,8 +130,11 @@ export default function UploadForm({ initialData }: UploadFormProps) {
         }
     };
 
-    const handleImageChange = (files: File[]) => {
+    const handleImageChange = (files: File[], urls: string[]) => {
         setImages(files);
+        setImageUrls(urls);
+        console.log("Erhaltene Dateien:", files.length);
+        console.log("Erhaltene URLs:", urls);
     };
 
     return (

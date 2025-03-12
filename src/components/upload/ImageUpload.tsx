@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Image as ImageType } from "@/types/index";
 
 interface ImageUploadProps {
-    onChange: (files: File[]) => void;
+    onChange: (files: File[], urls: string[]) => void;
     initialImages?: ImageType[];
 }
 
@@ -16,15 +16,49 @@ export default function ImageUpload({ onChange, initialImages }: ImageUploadProp
     const inputRef = useRef<HTMLInputElement>(null);
     const [files, setFiles] = useState<File[]>([]);
 
-    const handleFiles = (newFiles: FileList | null) => {
+    // In der handleFiles-Funktion in ImageUpload.tsx
+    const handleFiles = async (newFiles: FileList | null) => {
         if (!newFiles || newFiles.length === 0) return;
 
         const fileArray = Array.from(newFiles);
-        const newPreviewUrls = fileArray.map((file) => URL.createObjectURL(file));
 
-        setFiles((prev) => [...prev, ...fileArray]);
-        setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
-        onChange([...files, ...fileArray]);
+        try {
+            // Dateien hochladen und persistente URLs erhalten
+            const uploadedUrls = await Promise.all(
+                fileArray.map(async (file) => {
+                    const formData = new FormData();
+                    formData.append("file", file);
+
+                    const response = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Upload fehlgeschlagen");
+                    }
+
+                    const data = await response.json();
+                    return data.url; // Diese URL ist persistent
+                })
+            );
+
+            console.log("Hochgeladene URLs:", uploadedUrls);
+
+            // WICHTIG: Hier fügen wir die neuen URLs zum bestehenden Array hinzu
+            const newPreviewUrls = [...previewUrls, ...uploadedUrls];
+
+            // Aktualisiere den State
+            setPreviewUrls(newPreviewUrls);
+            setFiles((prev) => [...prev, ...fileArray]);
+
+            // Gib die NEUEN Werte an die übergeordnete Komponente weiter
+            onChange([...files, ...fileArray], newPreviewUrls);
+
+            console.log("Neue PreviewUrls:", newPreviewUrls);
+        } catch (error) {
+            console.error("Fehler beim Hochladen:", error);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,15 +91,20 @@ export default function ImageUpload({ onChange, initialImages }: ImageUploadProp
     };
 
     const removeImage = (index: number) => {
+        // Files aktualisieren
         const newFiles = [...files];
-        newFiles.splice(index, 0);
+        newFiles.splice(index, 1);
         setFiles(newFiles);
 
+        // Preview-URLs aktualisieren
         const newPreviewUrls = [...previewUrls];
         newPreviewUrls.splice(index, 1);
         setPreviewUrls(newPreviewUrls);
 
-        onChange(newFiles);
+        // onChange mit den aktualisierten Arrays aufrufen
+        onChange(newFiles, newPreviewUrls);
+
+        console.log("Nach Entfernen - URLs:", newPreviewUrls);
     };
 
     return (

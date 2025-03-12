@@ -56,6 +56,8 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { title, description, categoryId, categoryName, textBlocks, images, userId } = body;
+        console.log("Received component data:", body);
+        console.log("Images being saved:", body.images);
 
         let finalCategoryId = categoryId;
 

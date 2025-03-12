@@ -93,7 +93,7 @@ npx prisma migrate dev --name init
 npm run dev
 ```
 
-Die Anwendung ist nun unter http://localhost:3000 erreichbar.
+Die Anwendung ist nun unter http://localhost:3100 erreichbar.
 
 ### Schritt 7: Prisma Studio (optional)
 

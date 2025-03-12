@@ -15,7 +15,12 @@ export default function ComponentCard({ component }: ComponentCardProps) {
             <div className="bg-white rounded-lg shadow-md overflow-hidden transition-shadow hover:shadow-lg">
                 <div className="h-48 relative bg-gray-100">
                     {component.images && component.images.length > 0 ? (
-                        <Image src={component.images[0].url} alt={component.title} fill className="object-cover" />
+                        <Image
+                            src={component.images[0].url.startsWith("blob:") ? "/uploads/placeholder.webp" : component.images[0].url}
+                            alt={component.title}
+                            fill
+                            className="object-cover"
+                        />
                     ) : (
                         <div className="h-full flex items-center justify-center">
                             <span className="text-gray-400">Kein Bild verfügbar</span>
