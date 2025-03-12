@@ -20,7 +20,7 @@ services:
     db:
         image: postgres:15
         ports:
-            - "5442:5432"
+            - "5462:5432"
         environment:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
