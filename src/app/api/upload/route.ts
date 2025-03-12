@@ -4,6 +4,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import path from "path";
 import { existsSync } from "fs";
 
 export async function POST(req: NextRequest) {
@@ -27,8 +28,7 @@ export async function POST(req: NextRequest) {
         const fileName = `${Date.now()}-${file.name.replace(/\s/g, "-")}`;
 
         // Stelle sicher, dass der Ordner existiert
-        const uploadsDir = join(process.cwd(), "public", "uploads");
-
+        const uploadsDir = path.join(process.cwd(), "public", "uploads");
         if (!existsSync(uploadsDir)) {
             await mkdir(uploadsDir, { recursive: true });
         }

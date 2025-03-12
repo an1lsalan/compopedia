@@ -7,9 +7,11 @@ services:
             dockerfile: Dockerfile
         ports:
             - "3089:3000"
+        volumes:
+            - uploads-data:/app/public/uploads
         environment:
             - DATABASE_URL=postgresql://postgres:postgres@db:5432/compopedia?schema=public
-            - NEXTAUTH_URL=http://localhost:3000
+            - NEXTAUTH_URL=http://localhost:3100
             - NEXTAUTH_SECRET=your-nextauth-secret-here # In Produktion mit einem sicheren Secret ersetzen
         depends_on:
             - db
@@ -36,3 +38,4 @@ networks:
 
 volumes:
     postgres-data:
+    uploads-data:

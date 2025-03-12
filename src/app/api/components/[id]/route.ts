@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import path from "path";
+import { promises as fs } from "fs";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     // try {
@@ -116,8 +118,33 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get("userId");
 
+        const images = await prisma.image.findMany({
+            where: { componentId: id },
+        });
+
         if (!userId) {
             return NextResponse.json({ message: "Benutzer-ID ist erforderlich" }, { status: 400 });
+        }
+
+        await prisma.component.delete({
+            where: { id },
+        });
+
+        for (const image of images) {
+            if (image.url.startsWith("/uploads/")) {
+                const fileName = image.url.split("/").pop();
+                if (!fileName) {
+                    console.error("Fehler: Dateiname ist undefiniert");
+                    continue;
+                }
+                const filePath = path.join(process.cwd(), "public", "uploads", fileName);
+                try {
+                    await fs.unlink(filePath);
+                    console.log(`Bild gelöscht: ${filePath}`);
+                } catch (err) {
+                    console.error(`Fehler beim Löschen des Bildes ${filePath}:`, err);
+                }
+            }
         }
 
         const existingComponent = await prisma.component.findFirst({
