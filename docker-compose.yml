@@ -6,7 +6,7 @@ services:
             context: .
             dockerfile: Dockerfile
         ports:
-            - "3011:3000"
+            - "3088:3000"
         environment:
             - DATABASE_URL=postgresql://postgres:postgres@db:5432/compopedia?schema=public
             - NEXTAUTH_URL=http://localhost:3000
