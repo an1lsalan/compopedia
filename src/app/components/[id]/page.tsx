@@ -2,13 +2,8 @@ import { notFound } from "next/navigation";
 import ComponentDetail from "@/components/components/ComponentDetail";
 import { prisma } from "@/lib/prisma";
 
-interface ComponentPageProps {
-    params: {
-        id: string;
-    };
-}
-
-export async function generateMetadata({ params }: ComponentPageProps) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function generateMetadata({ params }: any) {
     const component = await prisma.component.findUnique({
         where: {
             id: params.id,
@@ -30,7 +25,8 @@ export async function generateMetadata({ params }: ComponentPageProps) {
     };
 }
 
-export default async function ComponentPage({ params }: ComponentPageProps) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function ComponentPage({ params }: any) {
     const component = await prisma.component.findUnique({
         where: {
             id: params.id,

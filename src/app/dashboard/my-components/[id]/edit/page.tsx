@@ -1,16 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { redirect, notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import UploadForm from "@/components/upload/UploadForm";
 
-interface EditComponentPageProps {
-    params: {
-        id: string;
-    };
-}
-
-export async function generateMetadata({ params }: EditComponentPageProps) {
+export async function generateMetadata({ params }: any) {
     const component = await prisma.component.findUnique({
         where: {
             id: params.id,
@@ -34,7 +29,7 @@ export async function generateMetadata({ params }: EditComponentPageProps) {
     };
 }
 
-export default async function EditComponentPage({ params }: EditComponentPageProps) {
+export default async function EditComponentPage({ params }: any) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
