@@ -10,9 +10,11 @@ import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import TextBlockInput from "./TextBlockInput";
+
 import ImageUpload from "./ImageUpload";
 import { Component, Category } from "@/types/index";
+import toast from "react-hot-toast";
+import CodeBlockInput from "./CodeBlockInput";
 
 const uploadSchema = z.object({
     title: z.string().min(3, "Titel muss mindestens 3 Zeichen lang sein"),
@@ -22,6 +24,7 @@ const uploadSchema = z.object({
     textBlocks: z.array(
         z.object({
             content: z.string().min(1, "Code-Block darf nicht leer sein"),
+            language: z.string().default("javascript"),
         })
     ),
 });
@@ -121,10 +124,11 @@ export default function UploadForm({ initialData }: UploadFormProps) {
                 response = await axios.post("/api/components", componentData);
             }
 
+            toast.success("Komponente erfolgreich hochgeladen!");
             router.push(`/components/${response.data.id}`);
         } catch (error) {
             console.error("Fehler beim Hochladen der Komponente:", error);
-            setError("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.");
+            toast.error("Fehler beim Hochladen der Komponente.");
         } finally {
             setIsLoading(false);
         }
@@ -139,7 +143,11 @@ export default function UploadForm({ initialData }: UploadFormProps) {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
+                    {error}
+                </div>
+            )}
 
             <div>
                 <Input label="Titel" placeholder="Name der Komponente" error={errors.title?.message} {...register("title")} />
@@ -155,12 +163,12 @@ export default function UploadForm({ initialData }: UploadFormProps) {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kategorie</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kategorie</label>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {!isNewCategory ? (
                         <>
                             <select
-                                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                                className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm dark:text-gray-200"
                                 {...register("categoryId")}
                                 onChange={(e) => {
                                     if (e.target.value === "new") {
@@ -200,26 +208,31 @@ export default function UploadForm({ initialData }: UploadFormProps) {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bilder</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Bilder</label>
                 <ImageUpload onChange={handleImageChange} initialImages={initialData?.images} />
             </div>
 
             <div>
                 <div className="flex items-center justify-between mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Code-Blöcke</label>
-                    <Button type="button" onClick={() => append({ content: "" })} variant="outline" size="sm">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Code-Blöcke</label>
+                    <Button type="button" onClick={() => append({ content: "", language: "javascript" })} variant="outline" size="sm">
                         Block hinzufügen
                     </Button>
                 </div>
 
                 <div className="space-y-4">
                     {fields.map((field, index) => (
-                        <TextBlockInput
+                        <CodeBlockInput
                             key={field.id}
                             index={index}
-                            register={register}
+                            register={
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                register as any
+                            }
                             remove={remove}
                             error={errors.textBlocks && errors.textBlocks[index]?.content?.message}
+                            value={watch(`textBlocks.${index}.content`) || ""}
+                            onChange={(value) => setValue(`textBlocks.${index}.content`, value)}
                         />
                     ))}
                 </div>

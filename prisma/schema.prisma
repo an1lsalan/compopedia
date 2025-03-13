@@ -48,6 +48,7 @@ model Component {
 model TextBlock {
   id          String    @id @default(cuid())
   content     String
+  language    String    @default("javascript") // Füge dieses Feld hinzu
   componentId String
   component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())

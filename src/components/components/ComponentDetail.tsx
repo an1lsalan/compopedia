@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Component } from "@/types/index";
+import Prism from "prismjs";
 
 interface ComponentDetailProps {
     component: Component;
@@ -104,12 +105,26 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-4">Code-Blöcke</h2>
                         {component.textBlocks.map((block, index) => (
-                            <div key={block.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                            <div
+                                key={block.id}
+                                className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4"
+                            >
                                 <div className="flex justify-between items-center mb-2">
-                                    <h3 className="text-lg font-medium">Block {index + 1}</h3>
+                                    <h3 className="text-lg font-medium dark:text-gray-200">Block {index + 1}</h3>
+                                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded">
+                                        {block.language || "javascript"}
+                                    </span>
                                 </div>
                                 <pre className="bg-gray-900 text-gray-100 p-4 rounded-md overflow-x-auto">
-                                    <code>{block.content}</code>
+                                    <code
+                                        dangerouslySetInnerHTML={{
+                                            __html: Prism.highlight(
+                                                block.content,
+                                                Prism.languages[block.language || "javascript"] || Prism.languages.javascript,
+                                                block.language || "javascript"
+                                            ),
+                                        }}
+                                    />
                                 </pre>
                             </div>
                         ))}

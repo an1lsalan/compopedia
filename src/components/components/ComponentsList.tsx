@@ -6,6 +6,8 @@ import ComponentCard from "./ComponentCard";
 import CategoryFilter from "./CategoryFilter";
 import SkeletonLoader from "./SkeletonLoader";
 import { Component, Category } from "@/types/index";
+import { motion } from "framer-motion";
+import SortOptions from "./SortOptions";
 
 export default function ComponentsList() {
     const [components, setComponents] = useState<Component[]>([]);
@@ -17,6 +19,17 @@ export default function ComponentsList() {
     const [hasMore, setHasMore] = useState(true);
     const observer = useRef<IntersectionObserver | null>(null);
     const loadingRef = useRef<HTMLDivElement>(null);
+    const [sortOption, setSortOption] = useState<string>("createdAt:desc");
+
+    const container = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+            },
+        },
+    };
 
     const fetchCategories = async () => {
         try {
@@ -33,7 +46,10 @@ export default function ComponentsList() {
             setIsLoading(true);
             setError(null);
 
-            let url = `/api/components?page=${pageNumber}&limit=10`;
+            // Parse die Sortieroptionen
+            const [sortBy, sortOrder] = sortOption.split(":");
+
+            let url = `/api/components?page=${pageNumber}&limit=10&sortBy=${sortBy}&sortOrder=${sortOrder}`;
             if (selectedCategory) {
                 url += `&categoryId=${selectedCategory}`;
             }
@@ -50,6 +66,15 @@ export default function ComponentsList() {
             setIsLoading(false);
         }
     };
+
+    const handleSortChange = (option: string) => {
+        setSortOption(option);
+        setPage(1); // Zurück zur ersten Seite bei Sortierungsänderung
+    };
+
+    useEffect(() => {
+        fetchComponents(page, page === 1);
+    }, [page, selectedCategory, sortOption]); // sortOption zur Abhängigkeitsliste hinzufügen
 
     // Intersection Observer für Endless Scrolling
     const lastComponentRef = useCallback(
@@ -90,6 +115,8 @@ export default function ComponentsList() {
                 <CategoryFilter categories={categories} selectedCategory={selectedCategory} onChange={handleCategoryChange} />
             </div>
 
+            <SortOptions onSort={handleSortChange} />
+
             {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">{error}</div>}
 
             {components.length === 0 && !isLoading ? (
@@ -97,7 +124,7 @@ export default function ComponentsList() {
                     <p className="text-gray-500">Keine Komponenten gefunden</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" variants={container} initial="hidden" animate="show">
                     {components.map((component, index) => {
                         if (components.length === index + 1) {
                             return (
@@ -109,7 +136,7 @@ export default function ComponentsList() {
                             return <ComponentCard key={component.id} component={component} />;
                         }
                     })}
-                </div>
+                </motion.div>
             )}
 
             {isLoading && (

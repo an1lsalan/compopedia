@@ -110,7 +110,9 @@ export default function ImageUpload({ onChange, initialImages }: ImageUploadProp
     return (
         <div className="space-y-4">
             <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center ${dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
+                className={`border-2 border-dashed rounded-lg p-6 text-center ${
+                    dragActive ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-300 dark:border-gray-600"
+                } dark:bg-gray-800`}
                 onDrop={handleDrop}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -122,7 +124,7 @@ export default function ImageUpload({ onChange, initialImages }: ImageUploadProp
                     <div className="flex justify-center">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-12 w-12 text-gray-400"
+                            className="h-12 w-12 text-gray-400 dark:text-gray-500"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -135,10 +137,16 @@ export default function ImageUpload({ onChange, initialImages }: ImageUploadProp
                             />
                         </svg>
                     </div>
-                    <p className="text-sm text-gray-500">Ziehe Bilder hierher oder klicke, um Bilder auszuwählen</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Ziehe Bilder hierher oder klicke, um Bilder auszuwählen</p>
                 </div>
 
-                <Button type="button" variant="outline" className="mt-4" onClick={() => inputRef.current?.click()}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-4 
+                "
+                    onClick={() => inputRef.current?.click()}
+                >
                     Bilder auswählen
                 </Button>
             </div>

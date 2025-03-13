@@ -58,6 +58,7 @@ export type TextBlock = {
     id: string;
     content: string;
     componentId: string;
+    language: string;
     createdAt: Date;
     updatedAt: Date;
 };
