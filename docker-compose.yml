@@ -9,19 +9,20 @@ services:
             - "3100:3000"
         volumes:
             - uploads-data:/app/public/uploads
+            - ./prisma:/app/prisma
         environment:
             - DATABASE_URL=postgresql://postgres:postgres@db:5432/compopedia?schema=public
             - NEXTAUTH_URL=http://localhost:3100
             - NEXTAUTH_SECRET=your-nextauth-secret-here # In Produktion mit einem sicheren Secret ersetzen
         depends_on:
-            - db
+            db:
+                condition: service_healthy
         networks:
             - compopedia-network
         restart: always
 
     db:
         image: postgres:15
-
         environment:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
@@ -31,6 +32,11 @@ services:
         networks:
             - compopedia-network
         restart: always
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
 
 networks:
     compopedia-network:
