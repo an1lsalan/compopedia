@@ -8,6 +8,17 @@ import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Component } from "@/types/index";
 import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
+import Lightbox from "yet-another-react-lightbox";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, A11y, Keyboard } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 // PrismJS-Sprachen importieren
 import "prismjs/components/prism-markup";
@@ -36,6 +47,41 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
     const { data: session } = useSession();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+
+    // Für die Lightbox benötigen wir ein Array mit src-Eigenschaften
+    const lightboxImages = component.images.map((img) => ({
+        src: img.url,
+        alt: `Bild von ${component.title}`,
+    }));
+
+    const getPrismLanguage = (language: string): string => {
+        const languageMap: Record<string, string> = {
+            html: "markup",
+            css: "css",
+            js: "javascript",
+            ts: "typescript",
+            jsx: "jsx",
+            tsx: "tsx",
+            java: "java",
+            py: "python",
+            cs: "csharp",
+            go: "go",
+            rs: "rust",
+            sql: "sql",
+            json: "json",
+            yaml: "yaml",
+            md: "markdown",
+            bash: "bash",
+            ps: "powershell",
+            cmd: "cmd",
+            docker: "docker",
+            git: "git",
+            npm: "npm",
+        };
+
+        return languageMap[language] || language;
+    };
 
     // Prism.js kann nur auf dem Client ausgeführt werden
     useEffect(() => {
@@ -43,13 +89,13 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
         Prism.highlightAll();
     }, []);
 
-    const nextImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex === component.images.length - 1 ? 0 : prevIndex + 1));
-    };
+    // const nextImage = () => {
+    //     setCurrentImageIndex((prevIndex) => (prevIndex === component.images.length - 1 ? 0 : prevIndex + 1));
+    // };
 
-    const prevImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? component.images.length - 1 : prevIndex - 1));
-    };
+    // const prevImage = () => {
+    //     setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? component.images.length - 1 : prevIndex - 1));
+    // };
 
     const isOwner = session?.user?.id === component.userId;
 
@@ -87,64 +133,43 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
                         <p>Aktualisiert am {formatDateTime(component.updatedAt)}</p>
                     )}
                 </div>
-
                 {component.images.length > 0 && (
-                    <div className="mb-8 relative">
-                        <div className="h-96 relative rounded-lg overflow-hidden">
-                            <Image
-                                src={component.images[currentImageIndex].url}
-                                alt={`Bild ${currentImageIndex + 1} von ${component.title}`}
-                                fill
-                                className="object-contain"
-                            />
-                        </div>
-                        {component.images.length > 1 && (
-                            <div className="absolute inset-0 flex items-center justify-between">
-                                <button
-                                    onClick={prevImage}
-                                    className="bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 p-2 rounded-full shadow mx-2"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                                    </svg>
-                                </button>
-                                <button
-                                    onClick={nextImage}
-                                    className="bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 p-2 rounded-full shadow mx-2"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                    </svg>
-                                </button>
-                            </div>
-                        )}
-                        {component.images.length > 1 && (
-                            <div className="flex justify-center mt-2 space-x-2">
-                                {component.images.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCurrentImageIndex(index)}
-                                        className={`w-3 h-3 rounded-full ${
-                                            index === currentImageIndex ? "bg-blue-600 dark:bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
-                                        }`}
-                                    />
+                    <div className="mb-8">
+                        {/* Swiper Slider */}
+                        <div className="rounded-lg overflow-hidden mb-4 cursor-pointer" onClick={() => setLightboxOpen(true)}>
+                            <Swiper
+                                modules={[Navigation, Pagination, A11y, Keyboard]}
+                                spaceBetween={0}
+                                slidesPerView={1}
+                                navigation
+                                pagination={{ clickable: true }}
+                                keyboard={{ enabled: true }}
+                                onSlideChange={(swiper) => setCurrentImageIndex(swiper.activeIndex)}
+                                className="h-96 w-full bg-gray-100 dark:bg-gray-700"
+                            >
+                                {component.images.map((image, index) => (
+                                    <SwiperSlide key={image.id} className="relative h-full">
+                                        <div className="relative h-full w-full">
+                                            <Image src={image.url} alt={`Bild ${index + 1} von ${component.title}`} fill className="object-contain" />
+                                        </div>
+                                    </SwiperSlide>
                                 ))}
-                            </div>
+                            </Swiper>
+                        </div>
+
+                        {/* Hinweis zum Vergrößern */}
+                        {component.images.length > 0 && (
+                            <p className="text-center text-sm text-gray-500 dark:text-gray-400">Klicke auf ein Bild, um es zu vergrößern</p>
                         )}
+
+                        {/* Lightbox für Vollbildansicht */}
+                        <Lightbox
+                            open={lightboxOpen}
+                            close={() => setLightboxOpen(false)}
+                            slides={lightboxImages}
+                            plugins={[Thumbnails, Zoom]}
+                            index={currentImageIndex}
+                        />
                     </div>
                 )}
 
@@ -176,15 +201,17 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
                                     >
                                         <code
                                             className={
-                                                block.blockType === "terminal" ? getTerminalClass(block.language) : `language-${block.language}`
+                                                block.blockType === "terminal"
+                                                    ? getTerminalClass(block.language)
+                                                    : `language-${getPrismLanguage(block.language)}`
                                             }
                                             dangerouslySetInnerHTML={{
                                                 __html: Prism.highlight(
                                                     block.content,
                                                     block.blockType === "terminal"
                                                         ? Prism.languages[block.language] || Prism.languages.bash
-                                                        : Prism.languages[block.language] || Prism.languages.javascript,
-                                                    block.blockType === "terminal" ? block.language : block.language
+                                                        : Prism.languages[getPrismLanguage(block.language)] || Prism.languages.javascript,
+                                                    block.blockType === "terminal" ? block.language : getPrismLanguage(block.language)
                                                 ),
                                             }}
                                         />

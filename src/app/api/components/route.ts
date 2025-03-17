@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -6,13 +8,28 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const categoryId = searchParams.get("categoryId");
+        const searchQuery = searchParams.get("search") || "";
         const sortBy = searchParams.get("sortBy") || "createdAt";
         const sortOrder = searchParams.get("sortOrder") || "desc";
         const limit = parseInt(searchParams.get("limit") || "10");
         const page = parseInt(searchParams.get("page") || "1");
         const skip = (page - 1) * limit;
 
-        const whereClause = categoryId ? { categoryId } : {};
+        // Baue die Where-Klausel auf Basis der Filter
+        let whereClause: any = {};
+
+        // Kategorie-Filter
+        if (categoryId) {
+            whereClause.categoryId = categoryId;
+        }
+
+        // Suchfilter für Titel
+        if (searchQuery) {
+            whereClause.title = {
+                contains: searchQuery,
+                mode: "insensitive", // Groß-/Kleinschreibung ignorieren
+            };
+        }
 
         const [components, total] = await Promise.all([
             prisma.component.findMany({
