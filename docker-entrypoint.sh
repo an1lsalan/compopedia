@@ -22,15 +22,11 @@ fi
 
 # Schema-Änderungen anwenden
 echo "Aktualisiere Datenbankschema mit prisma/schema.prisma..."
-npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss
+NODE_ENV=production npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss
 
 # Migrationen ausführen
 echo "Führe Datenbankmigrationen aus..."
-npx prisma migrate deploy --schema=./prisma/schema.prisma
-
-# Datenbankschema neu generieren
-echo "Generiere Prisma Client..."
-npx prisma generate --schema=./prisma/schema.prisma
+NODE_ENV=production npx prisma migrate deploy --schema=./prisma/schema.prisma
 
 # Starte die Anwendung
 exec "$@"

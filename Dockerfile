@@ -49,6 +49,11 @@ COPY --from=builder /app/public ./public
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public/uploads
 
+# Copy the prisma directory and generated client
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
@@ -56,9 +61,6 @@ RUN chown nextjs:nodejs .next
 # Copy the built app
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# WICHTIG: Kopiere das Prisma-Verzeichnis vollständig
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 # Debug: Verify schema.prisma is copied
 RUN ls -la prisma || echo "Prisma directory not found in final image"
