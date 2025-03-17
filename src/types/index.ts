@@ -55,6 +55,8 @@ export type Category = {
 
 // src/types/textblock.ts
 export type TextBlock = {
+    blockType: string;
+    headline: string;
     id: string;
     content: string;
     componentId: string;

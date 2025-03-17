@@ -41,7 +41,7 @@ export default async function MyComponentsPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold mb-2">Meine Komponenten</h1>
-                    <p className="text-gray-600">Verwalte die von dir hochgeladenen Komponenten</p>
+                    <p className="text-gray-600 dark:text-gray-300">Verwalte die von dir hochgeladenen Komponenten</p>
                 </div>
                 <div className="mt-4 md:mt-0">
                     <Link href="/upload">
@@ -50,7 +50,7 @@ export default async function MyComponentsPage() {
                 </div>
             </div>
 
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <div className="bg-white shadow-md rounded-lg overflow-hidden dark:bg-gray-800">
                 {userComponents.length === 0 ? (
                     <div className="text-center py-12">
                         <h2 className="text-xl font-semibold mb-2">Keine Komponenten gefunden</h2>

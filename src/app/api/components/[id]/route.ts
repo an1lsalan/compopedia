@@ -91,10 +91,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 description,
                 categoryId: finalCategoryId,
                 textBlocks: {
-                    create: textBlocks.map((block: { content: string }) => ({ content: block.content })),
+                    create: textBlocks.map((block: { content: string; headline?: string; blockType?: string; language?: string }) => ({
+                        content: block.content,
+                        headline: block.headline || "",
+                        blockType: block.blockType || "code",
+                        language: block.language || "javascript",
+                    })),
                 },
                 images: {
-                    create: images.map((image: { url: string }) => ({ url: image.url })),
+                    create: images.map((image: { url: string }) => ({
+                        url: image.url,
+                    })),
                 },
             },
             include: {

@@ -43,36 +43,50 @@ export default function ComponentsList({ components }: ComponentsListProps) {
 
     return (
         <div>
-            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">{error}</div>}
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 dark:bg-red-900 dark:text-red-200">{error}</div>
+            )}
 
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                            >
                                 Komponente
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider  dark:text-gray-300"
+                            >
                                 Kategorie
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider  dark:text-gray-300"
+                            >
                                 Datum
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                                scope="col"
+                                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider  dark:text-gray-300"
+                            >
                                 Aktionen
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
                         {components.map((component) => (
                             <tr key={component.id}>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
-                                        <div className="h-10 w-10 flex-shrink-0 mr-3 relative bg-gray-100 rounded">
+                                        <div className="h-10 w-10 flex-shrink-0 mr-3 relative bg-gray-100 rounded dark:bg-gray-800">
                                             {component.images && component.images.length > 0 ? (
                                                 <Image src={component.images[0].url} alt={component.title} fill className="object-cover rounded" />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full w-full text-gray-400">
+                                                <div className="flex items-center justify-center h-full w-full text-gray-400 dark:text-gray-600">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         className="h-5 w-5"
@@ -102,7 +116,7 @@ export default function ComponentsList({ components }: ComponentsListProps) {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(component.createdAt)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div className="flex justify-end space-x-2">
+                                    <div className="flex justify-end space-x-4 items-center">
                                         <Link href={`/dashboard/my-components/${component.id}/edit`} className="text-blue-600 hover:text-blue-900">
                                             Bearbeiten
                                         </Link>

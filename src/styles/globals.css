@@ -75,3 +75,80 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Terminal-Block-Styling hinzufügen zu globals.css */
+
+.terminal-code {
+    background-color: #1e1e1e;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+.terminal-code code {
+    display: block;
+}
+
+/* Dollar-Zeichen hervorheben */
+.terminal-code .token.function {
+    color: #d7d7d7;
+    font-weight: bold;
+}
+
+/* Befehle hervorheben */
+.terminal-code .token.operator,
+.terminal-code .token.entity,
+.terminal-code .token.url,
+.terminal-code .token.variable,
+.terminal-code .token.key,
+.terminal-code .token.value,
+.terminal-code .token.selector,
+.terminal-code .token.attr-name,
+.terminal-code .token.string,
+.terminal-code .token.char,
+.terminal-code .token.builtin {
+    color: #88c0d0;
+}
+
+/* Optionen/Flags hervorheben */
+.terminal-code .token.punctuation,
+.terminal-code .token.tag,
+.terminal-code .token.attr-value,
+.terminal-code .token.boolean,
+.terminal-code .token.number,
+.terminal-code .token.constant,
+.terminal-code .token.symbol,
+.terminal-code .token.deleted {
+    color: #ebcb8b;
+}
+
+/* Ausgabetexte hervorheben */
+.terminal-code .token.comment,
+.terminal-code .token.prolog,
+.terminal-code .token.doctype,
+.terminal-code .token.cdata {
+    color: #a5a5a5;
+}
+
+/* PowerShell spezifische Styles */
+.language-powershell .token.command {
+    color: #88c0d0;
+}
+
+.language-powershell .token.parameter {
+    color: #ebcb8b;
+}
+
+/* Terminal-Prompt und Ausgabe visuell unterscheiden */
+.terminal-code .token.prompt {
+    color: #88c0d0;
+    font-weight: bold;
+}
+
+.terminal-code .token.output {
+    color: #d8d8d8;
+    font-style: italic;
+}

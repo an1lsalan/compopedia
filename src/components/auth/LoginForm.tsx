@@ -60,7 +60,7 @@ export default function LoginForm() {
         <div className="max-w-md w-full mx-auto p-6">
             <div className="text-center mb-8">
                 <h1 className="text-2xl font-bold">Anmelden</h1>
-                <p className="text-gray-600 mt-2">Melde dich mit deinen Zugangsdaten an</p>
+                <p className="text-gray-600 mt-2 dark:text-gray-300">Melde dich mit deinen Zugangsdaten an</p>
             </div>
 
             {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">{error}</div>}
@@ -76,9 +76,9 @@ export default function LoginForm() {
             </form>
 
             <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                     Noch kein Konto?{" "}
-                    <Link href="/register" className="text-blue-600 hover:text-blue-800">
+                    <Link href="/register" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition">
                         Jetzt registrieren
                     </Link>
                 </p>

@@ -11,7 +11,7 @@
         "db:generate": "prisma generate",
         "db:studio": "prisma studio",
         "db:migrate": "prisma migrate dev",
-        "restart": "docker-compose down && docker-compose build && docker-compose up -d && sleep 5 && npm run db:update && npm run dev",
+        "restart": "docker-compose down && docker-compose build && docker-compose up -d && sleep 5 && npm run db:update",
         "db:update": "npx prisma migrate deploy && npx prisma generate"
     },
     "dependencies": {

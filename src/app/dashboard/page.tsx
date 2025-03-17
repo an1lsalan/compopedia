@@ -60,8 +60,8 @@ export default async function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold mb-2">Meine Komponenten</h2>
+                <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
+                    <h2 className="text-lg font-semibold mb-2 dark:text-gray-200">Meine Komponenten</h2>
                     <p className="text-3xl font-bold">{totalComponents}</p>
                     <div className="mt-4">
                         <Link href="/dashboard/my-components">
@@ -71,9 +71,14 @@ export default async function DashboardPage() {
                         </Link>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold mb-2">Konto</h2>
-                    <p className="text-gray-600">{session.user.email}</p>
+                <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
+                    <h2 className="text-lg font-semibold mb-2 dark:text-gray-200">Konto</h2>
+                    <p
+                        className="text-gray-600 dark:text-gray-200
+                    "
+                    >
+                        {session.user.email}
+                    </p>
                     <div className="mt-4">
                         <Link href="/dashboard/account">
                             <Button variant="outline" size="sm">
@@ -84,7 +89,7 @@ export default async function DashboardPage() {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold">Neueste Komponenten</h2>
                     <Link href="/dashboard/my-components">

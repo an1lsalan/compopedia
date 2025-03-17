@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -36,30 +30,32 @@ model Component {
   title       String
   description String
   userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
-  textBlocks  TextBlock[]
-  images      Image[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  category    Category    @relation(fields: [categoryId], references: [id])
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images      Image[]
+  textBlocks  TextBlock[]
 }
 
 model TextBlock {
   id          String    @id @default(cuid())
   content     String
-  language    String    @default("javascript") // Füge dieses Feld hinzu
   componentId String
-  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  blockType   String    @default("code")
+  headline    String    @default("")
+  language    String    @default("javascript")
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
 }
 
 model Image {
   id          String    @id @default(cuid())
   url         String
   componentId String
-  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
 }

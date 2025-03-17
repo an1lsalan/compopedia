@@ -100,9 +100,15 @@ export default function AccountDetails() {
 
     return (
         <div className="max-w-2xl mx-auto">
-            {successMessage && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6">{successMessage}</div>}
+            {successMessage && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6 dark:bg-green-900 dark:text-green-200">
+                    {successMessage}
+                </div>
+            )}
 
-            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">{error}</div>}
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 dark:bg-red-900 dark:text-red-200">{error}</div>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div>
@@ -113,9 +119,11 @@ export default function AccountDetails() {
                     <Input label="E-Mail" type="email" placeholder="name@firma.de" error={errors.email?.message} {...register("email")} />
                 </div>
 
-                <div className="border-t border-gray-200 pt-6">
+                <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
                     <h3 className="text-lg font-medium mb-4">Passwort ändern</h3>
-                    <p className="text-sm text-gray-500 mb-4">Lasse die Felder leer, wenn du dein Passwort nicht ändern möchtest</p>
+                    <p className="text-sm text-gray-500 mb-4 dark:text-gray-300">
+                        Lasse die Felder leer, wenn du dein Passwort nicht ändern möchtest
+                    </p>
 
                     <div className="space-y-4">
                         <Input

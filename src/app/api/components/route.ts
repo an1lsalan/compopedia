@@ -93,8 +93,11 @@ export async function POST(req: NextRequest) {
                 userId,
                 categoryId: finalCategoryId,
                 textBlocks: {
-                    create: textBlocks.map((block: { content: string }) => ({
+                    create: textBlocks.map((block: { content: string; headline?: string; blockType?: string; language?: string }) => ({
                         content: block.content,
+                        headline: block.headline || "",
+                        blockType: block.blockType || "code",
+                        language: block.language || "javascript",
                     })),
                 },
                 images: {

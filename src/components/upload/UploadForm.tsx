@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,7 +24,9 @@ const uploadSchema = z.object({
     categoryName: z.string().optional(),
     textBlocks: z.array(
         z.object({
-            content: z.string().min(1, "Code-Block darf nicht leer sein"),
+            content: z.string().min(1, "Block darf nicht leer sein"),
+            headline: z.string().optional(),
+            blockType: z.string().default("code"),
             language: z.string().default("javascript"),
         })
     ),
@@ -41,7 +44,6 @@ export default function UploadForm({ initialData }: UploadFormProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [images, setImages] = useState<File[]>([]);
     const [isNewCategory, setIsNewCategory] = useState(false);
     const [imageUrls, setImageUrls] = useState<string[]>(initialData?.images ? initialData.images.map((img) => img.url) : []);
@@ -62,13 +64,16 @@ export default function UploadForm({ initialData }: UploadFormProps) {
                   categoryId: initialData.categoryId,
                   textBlocks: initialData.textBlocks.map((block) => ({
                       content: block.content,
+                      headline: block.headline || "",
+                      blockType: block.blockType || "code",
+                      language: block.language || "javascript",
                   })),
               }
             : {
                   title: "",
                   description: "",
                   categoryId: "",
-                  textBlocks: [{ content: "" }],
+                  textBlocks: [{ content: "", headline: "", blockType: "code", language: "javascript" }],
               },
     });
 
@@ -78,7 +83,6 @@ export default function UploadForm({ initialData }: UploadFormProps) {
     });
 
     // Kategorie-Auswahl überwachen
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const categoryId = watch("categoryId");
 
     // Kategorien laden
@@ -106,9 +110,6 @@ export default function UploadForm({ initialData }: UploadFormProps) {
         setError(null);
 
         try {
-            // Wir brauchen uploadedImages nicht mehr, da wir direkt imageUrls verwenden
-            // Entferne die uploadedImages-Variable und den betreffenden Code
-
             const componentData = {
                 ...data,
                 userId: session.user.id,
@@ -124,7 +125,7 @@ export default function UploadForm({ initialData }: UploadFormProps) {
                 response = await axios.post("/api/components", componentData);
             }
 
-            toast.success("Komponente erfolgreich hochgeladen!");
+            toast.success(initialData ? "Komponente erfolgreich aktualisiert!" : "Komponente erfolgreich hochgeladen!");
             router.push(`/components/${response.data.id}`);
         } catch (error) {
             console.error("Fehler beim Hochladen der Komponente:", error);
@@ -137,8 +138,6 @@ export default function UploadForm({ initialData }: UploadFormProps) {
     const handleImageChange = (files: File[], urls: string[]) => {
         setImages(files);
         setImageUrls(urls);
-        console.log("Erhaltene Dateien:", files.length);
-        console.log("Erhaltene URLs:", urls);
     };
 
     return (
@@ -214,8 +213,13 @@ export default function UploadForm({ initialData }: UploadFormProps) {
 
             <div>
                 <div className="flex items-center justify-between mb-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Code-Blöcke</label>
-                    <Button type="button" onClick={() => append({ content: "", language: "javascript" })} variant="outline" size="sm">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Code & Terminal Blöcke</label>
+                    <Button
+                        type="button"
+                        onClick={() => append({ content: "", headline: "", blockType: "code", language: "javascript" })}
+                        variant="outline"
+                        size="sm"
+                    >
                         Block hinzufügen
                     </Button>
                 </div>
@@ -225,14 +229,17 @@ export default function UploadForm({ initialData }: UploadFormProps) {
                         <CodeBlockInput
                             key={field.id}
                             index={index}
-                            register={
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                register as any
-                            }
+                            register={register}
                             remove={remove}
                             error={errors.textBlocks && errors.textBlocks[index]?.content?.message}
                             value={watch(`textBlocks.${index}.content`) || ""}
                             onChange={(value) => setValue(`textBlocks.${index}.content`, value)}
+                            headlineValue={watch(`textBlocks.${index}.headline`) || ""}
+                            onHeadlineChange={(value) => setValue(`textBlocks.${index}.headline`, value)}
+                            blockTypeValue={watch(`textBlocks.${index}.blockType`) || "code"}
+                            onBlockTypeChange={(value) => setValue(`textBlocks.${index}.blockType`, value)}
+                            languageValue={watch(`textBlocks.${index}.language`) || "javascript"}
+                            onLanguageChange={(value) => setValue(`textBlocks.${index}.language`, value)}
                         />
                     ))}
                 </div>
