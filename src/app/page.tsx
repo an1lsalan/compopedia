@@ -59,7 +59,7 @@ export default function Home() {
                 >
                     <div className="relative w-full h-full overflow-hidden rounded-lg shadow-xl">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20"></div>
-                        <Image src="/dashboard-preview.png" alt="Compopedia Dashboard Preview" fill className="object-cover" priority />
+                        <Image src="/assets/dashboard-preview.png" alt="Compopedia Dashboard Preview" fill className="object-cover" priority />
                     </div>
                 </motion.div>
             </section>
@@ -78,17 +78,17 @@ export default function Home() {
                 <div className="grid md:grid-cols-3 gap-8">
                     {[
                         {
-                            icon: "/window.svg",
+                            icon: "/assets/window.svg",
                             title: "Komponenten organisieren",
                             description: "Strukturiere und kategorisiere deine Komponenten für schnellen Zugriff und einfache Wiederverwendung.",
                         },
                         {
-                            icon: "/file.svg",
+                            icon: "/assets/file.svg",
                             title: "Code dokumentieren",
                             description: "Dokumentiere deine Komponenten mit Code-Snippets, Terminal-Befehlen und Bildern.",
                         },
                         {
-                            icon: "/globe.svg",
+                            icon: "/assets/globe.svg",
                             title: "Im Team teilen",
                             description: "Teile Wissen und Komponenten mit deinem Team und sorge für einheitliche Standards.",
                         },
