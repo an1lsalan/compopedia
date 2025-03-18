@@ -11,13 +11,11 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Installiere Dependencies 
-RUN npm ci
+RUN npm ci --production=false
+RUN npm install --save-dev wait-on
 
 # Sharp für Bildverarbeitung explizit installieren
 RUN npm install sharp
-
-# Installiere globale Pakete
-RUN npm install -g prisma wait-on
 
 # Builder Stage
 FROM base AS builder
@@ -27,12 +25,16 @@ COPY --from=deps /app/node_modules ./node_modules
 # Kopiere das gesamte Projekt
 COPY . .
 
+# Debug-Ausgabe für Prisma-Schema
+RUN ls -la prisma || echo "Prisma directory not found during build"
+RUN test -f prisma/schema.prisma && echo "Schema found" || echo "Schema NOT found"
+
 # Umgebungsvariablen setzen
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
 # Prisma Client generieren
-RUN prisma generate
+RUN npx prisma generate
 
 # Anwendung bauen
 RUN npm run build
@@ -58,19 +60,23 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
 
 # Berechtigungen für den Prerender-Cache setzen
-RUN mkdir -p .next
+RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
 # Die gebaute App kopieren
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# NPM global packages
-RUN npm install -g prisma wait-on
+# Debug: Prisma-Schema überprüfen
+RUN ls -la prisma || echo "Prisma directory not found in final image"
+RUN test -f prisma/schema.prisma && echo "Schema found in final image" || echo "Schema NOT found in final image"
 
 # Startskript kopieren und ausführbar machen
 COPY --from=builder /app/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
+
+# PostgreSQL-Client installieren
+RUN apk add --no-cache postgresql-client
 
 USER nextjs
 
