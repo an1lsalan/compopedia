@@ -1,7 +1,7 @@
 FROM node:18-alpine AS base
 
 # Grundlegende Pakete installieren
-RUN apk add --no-cache libc6-compat curl
+RUN apk add --no-cache libc6-compat curl postgresql-client
 
 # Dependencies Stage
 FROM base AS deps
@@ -75,6 +75,8 @@ RUN test -f prisma/schema.prisma && echo "Schema found in final image" || echo "
 COPY --from=builder /app/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
+# PostgreSQL-Client installieren
+RUN apk add --no-cache postgresql-client
 
 USER nextjs
 
