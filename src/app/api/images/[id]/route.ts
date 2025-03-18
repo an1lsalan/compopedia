@@ -2,10 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
     try {
         // Wichtig: Warte auf params in Next.js App Router
-        const id = await params.id;
+        const { id } = context.params;
 
         // Bild aus der Datenbank laden
         const image = await prisma.image.findUnique({
