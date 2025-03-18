@@ -7,10 +7,10 @@ import axios from "axios";
 import ComponentCard from "./ComponentCard";
 import CategoryFilter from "./CategoryFilter";
 import SearchBar from "./SearchBar";
-// import SkeletonLoader from "./SkeletonLoader";
 import { Component, Category } from "@/types/index";
 import { motion, AnimatePresence } from "framer-motion";
 import SortOptions from "./SortOptions";
+import toast from "react-hot-toast";
 
 export default function ComponentsList() {
     const router = useRouter();
@@ -67,6 +67,7 @@ export default function ComponentsList() {
         } catch (error) {
             console.error("Fehler beim Laden der Kategorien:", error);
             setError("Kategorien konnten nicht geladen werden");
+            toast.error("Fehler beim Laden der Kategorien");
         }
     };
 
@@ -88,7 +89,11 @@ export default function ComponentsList() {
                 url += `&search=${encodeURIComponent(searchQuery)}`;
             }
 
+            console.log("API-Anfrage:", url);
+
             const response = await axios.get(url);
+            console.log("API-Antwort:", response.data);
+
             const { components: newComponents, pagination } = response.data;
 
             setComponents(resetList ? newComponents : [...components, ...newComponents]);
@@ -97,6 +102,7 @@ export default function ComponentsList() {
         } catch (error) {
             console.error("Fehler beim Laden der Komponenten:", error);
             setError("Komponenten konnten nicht geladen werden");
+            toast.error("Fehler beim Laden der Komponenten");
         } finally {
             setIsLoading(false);
             setIsSearching(false);

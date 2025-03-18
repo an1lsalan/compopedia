@@ -4,9 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import UploadForm from "@/components/upload/UploadForm";
+import { Component, Image, User, Category, TextBlock } from "@/types/index";
 
 export async function generateMetadata({ params }: any) {
-    const component = await prisma.component.findUnique({
+    const dbComponent = await prisma.component.findUnique({
         where: {
             id: params.id,
         },
@@ -14,18 +15,18 @@ export async function generateMetadata({ params }: any) {
             category: true,
             textBlocks: true,
             images: true,
-            user: true, // Include the user property
+            user: true,
         },
     });
 
-    if (!component) {
+    if (!dbComponent) {
         return {
             title: "Komponente nicht gefunden",
         };
     }
 
     return {
-        title: `Bearbeiten: ${component.title} | Compopedia`,
+        title: `Bearbeiten: ${dbComponent.title} | Compopedia`,
     };
 }
 
@@ -36,7 +37,7 @@ export default async function EditComponentPage({ params }: any) {
         redirect("/login");
     }
 
-    const component = await prisma.component.findUnique({
+    const dbComponent = await prisma.component.findUnique({
         where: {
             id: params.id,
             userId: session.user.id, // Sicherstellen, dass die Komponente dem Benutzer gehört
@@ -49,9 +50,51 @@ export default async function EditComponentPage({ params }: any) {
         },
     });
 
-    if (!component) {
+    if (!dbComponent) {
         notFound();
     }
+
+    // Konvertieren des Prisma-Modells in den Frontend-Typ
+    const component: Component = {
+        id: dbComponent.id,
+        title: dbComponent.title,
+        description: dbComponent.description,
+        userId: dbComponent.userId,
+        categoryId: dbComponent.categoryId,
+        createdAt: dbComponent.createdAt,
+        updatedAt: dbComponent.updatedAt,
+        category: dbComponent.category as Category,
+        user: {
+            id: dbComponent.user.id,
+            name: dbComponent.user.name,
+            email: dbComponent.user.email,
+            createdAt: dbComponent.user.createdAt,
+            updatedAt: dbComponent.user.updatedAt,
+        } as User,
+        textBlocks: dbComponent.textBlocks.map((block) => ({
+            id: block.id,
+            content: block.content,
+            componentId: block.componentId,
+            blockType: block.blockType,
+            headline: block.headline,
+            language: block.language,
+            createdAt: block.createdAt,
+            updatedAt: block.updatedAt,
+        })) as TextBlock[],
+        images: dbComponent.images.map((img) => ({
+            id: img.id,
+            url: img.url || undefined, // Konvertiere null zu undefined
+            componentId: img.componentId || "",
+            createdAt: img.createdAt,
+            updatedAt: img.updatedAt,
+            data: img.data,
+            mimeType: img.mimeType || undefined,
+            width: img.width || undefined,
+            height: img.height || undefined,
+            size: img.size || undefined,
+            originalName: img.originalName || undefined,
+        })) as Image[],
+    };
 
     return (
         <div className="container mx-auto px-4 py-8">

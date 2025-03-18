@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Image as ImageType } from "@/types/index";
@@ -28,22 +28,32 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 export default function ImageUpload({ onChange, initialImages, maxFiles = 10 }: ImageUploadProps) {
-    const [previewImages, setPreviewImages] = useState<ImageData[]>(
-        initialImages
-            ? initialImages.map((img) => ({
-                  id: img.id,
-                  url: img.url || `/api/images/${img.id}`,
-                  width: img.width || 0,
-                  height: img.height || 0,
-              }))
-            : []
-    );
+    const [previewImages, setPreviewImages] = useState<ImageData[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [files, setFiles] = useState<File[]>([]);
+
+    // Initialisiere Bilder aus initialImages beim ersten Rendern
+    useEffect(() => {
+        if (initialImages && initialImages.length > 0) {
+            const initialPreviewImages = initialImages.map((img) => ({
+                id: img.id,
+                url: typeof img.url === "string" ? img.url : `/api/images/${img.id}`,
+                width: img.width || 0,
+                height: img.height || 0,
+            }));
+
+            setPreviewImages(initialPreviewImages);
+
+            // Wichtig: Informiere übergeordnete Komponente über die initialisierten Bilder
+            onChange([], initialPreviewImages);
+
+            console.log("Initialisierte", initialPreviewImages.length, "Bilder");
+        }
+    }, [initialImages]);
 
     // Datei-Validierung
     const validateFile = (file: File): boolean => {
@@ -215,6 +225,8 @@ export default function ImageUpload({ onChange, initialImages, maxFiles = 10 }: 
 
         // onChange mit den aktualisierten Arrays aufrufen
         onChange(newFiles, newPreviewImages);
+
+        console.log("Bild entfernt, noch", newPreviewImages.length, "Bilder übrig");
     };
 
     return (
@@ -313,8 +325,8 @@ export default function ImageUpload({ onChange, initialImages, maxFiles = 10 }: 
                                 className="text-red-600 dark:text-red-400 hover:text-red-800 hover:bg-red-50"
                                 onClick={() => {
                                     if (confirm("Möchtest du wirklich alle Bilder entfernen?")) {
-                                        setFiles([]);
                                         setPreviewImages([]);
+                                        setFiles([]);
                                         onChange([], []);
                                     }
                                 }}

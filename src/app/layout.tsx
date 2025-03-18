@@ -22,6 +22,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
     return (
         <html lang="de" suppressHydrationWarning>
+            <head>
+                <meta name="apple-mobile-web-app-title" content="Compopedia" />
+            </head>
             <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                     <AuthProvider session={session}>

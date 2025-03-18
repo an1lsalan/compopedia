@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import ComponentsList from "@/components/dashboard/ComponentsList";
+import { Component, Image, User, Category, TextBlock } from "@/types/index";
 
 export const metadata = {
     title: "Dashboard - Compopedia",
@@ -19,7 +20,7 @@ export default async function DashboardPage() {
     }
 
     // Neuste Komponenten des Benutzers laden
-    const userComponents = await prisma.component.findMany({
+    const dbComponents = await prisma.component.findMany({
         where: {
             userId: session.user.id,
         },
@@ -27,7 +28,6 @@ export default async function DashboardPage() {
             createdAt: "desc",
         },
         take: 5,
-
         include: {
             category: true,
             images: {
@@ -44,6 +44,48 @@ export default async function DashboardPage() {
             userId: session.user.id,
         },
     });
+
+    // Konvertieren der Prisma-Modelle in Frontend-Typen
+    const userComponents: Component[] = dbComponents.map((comp) => ({
+        id: comp.id,
+        title: comp.title,
+        description: comp.description,
+        userId: comp.userId,
+        categoryId: comp.categoryId,
+        createdAt: comp.createdAt,
+        updatedAt: comp.updatedAt,
+        category: comp.category as Category,
+        user: {
+            id: comp.user.id,
+            name: comp.user.name,
+            email: comp.user.email,
+            createdAt: comp.user.createdAt,
+            updatedAt: comp.user.updatedAt,
+        } as User,
+        textBlocks: comp.textBlocks.map((block) => ({
+            id: block.id,
+            content: block.content,
+            componentId: block.componentId,
+            blockType: block.blockType,
+            headline: block.headline,
+            language: block.language,
+            createdAt: block.createdAt,
+            updatedAt: block.updatedAt,
+        })) as TextBlock[],
+        images: comp.images.map((img) => ({
+            id: img.id,
+            url: img.url || undefined, // Konvertiere null zu undefined
+            componentId: img.componentId || "",
+            createdAt: img.createdAt,
+            updatedAt: img.updatedAt,
+            data: img.data,
+            mimeType: img.mimeType || undefined,
+            width: img.width || undefined,
+            height: img.height || undefined,
+            size: img.size || undefined,
+            originalName: img.originalName || undefined,
+        })) as Image[],
+    }));
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -73,12 +115,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
                     <h2 className="text-lg font-semibold mb-2 dark:text-gray-200">Konto</h2>
-                    <p
-                        className="text-gray-600 dark:text-gray-200
-                    "
-                    >
-                        {session.user.email}
-                    </p>
+                    <p className="text-gray-600 dark:text-gray-200">{session.user.email}</p>
                     <div className="mt-4">
                         <Link href="/dashboard/account">
                             <Button variant="outline" size="sm">

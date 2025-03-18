@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
@@ -46,7 +47,28 @@ export default function UploadForm({ initialData }: UploadFormProps) {
     const [error, setError] = useState<string | null>(null);
     const [images, setImages] = useState<File[]>([]);
     const [isNewCategory, setIsNewCategory] = useState(false);
-    const [imageUrls, setImageUrls] = useState<string[]>(initialData?.images ? initialData.images.map((img) => img.url) : []);
+    const [initialImageData, setInitialImageData] = useState<any[]>([]);
+    const [imageUrls, setImageUrls] = useState<any[]>([]);
+
+    // Initialisierung - wenn initialData vorhanden, bereite die Bilddaten auf
+    useEffect(() => {
+        if (initialData?.images && initialData.images.length > 0) {
+            console.log("Initialisiere mit vorhandenen Bilddaten:", initialData.images);
+
+            // Bilder aufbereiten
+            const preparedImages = initialData.images.map((img) => {
+                return {
+                    id: img.id,
+                    url: typeof img.url === "string" ? img.url : `/api/images/${img.id}`,
+                    width: img.width,
+                    height: img.height,
+                };
+            });
+
+            setInitialImageData(preparedImages);
+            setImageUrls(preparedImages);
+        }
+    }, [initialData]);
 
     const {
         register,
@@ -110,12 +132,16 @@ export default function UploadForm({ initialData }: UploadFormProps) {
         setError(null);
 
         try {
+            // Kombiniere bestehende und neue Bilder
+            const allImages = [...imageUrls];
+
+            console.log("Sende Komponente mit Bildern:", allImages);
+
             const componentData = {
                 ...data,
                 userId: session.user.id,
-                images: imageUrls.map((url) => ({ url })),
+                images: allImages,
             };
-            console.log("Component data being sent:", componentData);
 
             let response;
 
@@ -135,9 +161,21 @@ export default function UploadForm({ initialData }: UploadFormProps) {
         }
     };
 
-    const handleImageChange = (files: File[], urls: string[]) => {
+    const handleImageChange = (files: File[], imageData: any[]) => {
         setImages(files);
-        setImageUrls(urls);
+
+        // Hier wichtig: imageData ist die KOMPLETTE Liste der Bilder, inklusive beibehaltener
+        // existierender Bilder und neuer Uploads. Wenn ein Bild fehlt, wurde es gelöscht.
+        setImageUrls(imageData);
+
+        // Aktualisiere auch initialImageData, um gelöschte Bilder zu berücksichtigen
+        if (initialData?.images) {
+            // Filtere initialImageData, um nur Bilder zu behalten, die noch in imageData vorhanden sind
+            const updatedInitialImages = initialImageData.filter((img) => imageData.some((newImg) => newImg.id === img.id));
+            setInitialImageData(updatedInitialImages);
+        }
+
+        console.log("Aktualisierte Bildliste:", imageData.length, "Bilder");
     };
 
     return (

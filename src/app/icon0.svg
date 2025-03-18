@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="100" height="100"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Hintergrund -->
+  <circle cx="50" cy="50" r="50" fill="#3b82f6"></circle>
+  
+  <!-- Breiteres "C" für Compopedia -->
+  <path d="M 38 28 C 24 28, 15 38, 15 50 C 15 62, 24 72, 38 72" stroke="#ffffff" stroke-width="8" fill="none" stroke-linecap="round"></path>
+  
+  <!-- P-Teil - etwas schmaler -->
+  <path d="M 48 28 L 48 72 M 48 28 L 64 28 C 72 28, 72 45, 64 45 L 48 45" stroke="#ffffff" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+  
+  <!-- Code-Block - größer -->
+  <rect x="62" y="55" width="20" height="15" rx="2" fill="#ffffff" opacity="0.9"></rect>
+  <rect x="65" y="60" width="14" height="2" rx="1" fill="#3b82f6"></rect>
+  <rect x="65" y="64" width="10" height="2" rx="1" fill="#3b82f6"></rect>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
+@media (prefers-color-scheme: dark) { :root { filter: none; } }
+</style></svg>

@@ -19,6 +19,16 @@ export async function GET(req: NextRequest) {
         const page = parseInt(searchParams.get("page") || "1");
         const skip = (page - 1) * limit;
 
+        console.log("API-Aufruf mit Parametern:", {
+            categoryId,
+            searchQuery,
+            sortBy,
+            sortOrder,
+            limit,
+            page,
+            skip,
+        });
+
         // Baue die Where-Klausel auf Basis der Filter
         let whereClause: any = {};
 
@@ -71,6 +81,8 @@ export async function GET(req: NextRequest) {
             }),
         ]);
 
+        console.log(`API-Ergebnis: ${components.length} Komponenten gefunden, insgesamt ${total}`);
+
         // Komponenten mit angepassten Bild-URLs zurückgeben
         const processedComponents = components.map((component) => {
             const processedImages = component.images.map((image) => {
@@ -102,10 +114,9 @@ export async function GET(req: NextRequest) {
         });
     } catch (error) {
         console.error("Fehler beim Abrufen der Komponenten:", error);
-        return NextResponse.json({ message: "Interner Serverfehler" }, { status: 500 });
+        return NextResponse.json({ message: "Interner Serverfehler", error: String(error) }, { status: 500 });
     }
 }
-
 export async function POST(req: NextRequest) {
     try {
         // Authentifizierungsinformationen abrufen

@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import path from "path";
-import { promises as fs } from "fs";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     // try {
@@ -57,14 +55,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         const body = await request.json();
         const { title, description, categoryId, categoryName, textBlocks, images, userId } = body;
 
+        // Debug-Ausgaben
+        console.log("Update für Komponente:", id);
+        console.log("Empfangene Bilder:", JSON.stringify(images));
+
         // Überprüfen, ob die Komponente existiert und dem Benutzer gehört
         const existingComponent = await prisma.component.findFirst({
             where: { id, userId },
+            include: {
+                images: true,
+            },
         });
 
         if (!existingComponent) {
             return NextResponse.json({ message: "Komponente nicht gefunden oder keine Berechtigung" }, { status: 404 });
         }
+
+        console.log("Bestehende Bilder:", JSON.stringify(existingComponent.images));
 
         // Kategorie-ID bestimmen
         let finalCategoryId = categoryId;
@@ -86,44 +93,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         // Bestehende TextBlocks löschen
         await prisma.textBlock.deleteMany({ where: { componentId: id } });
 
-        // Vorhandene Bilder-Beziehungen entfernen, ohne die Bilder zu löschen
-        await prisma.component.update({
-            where: { id },
-            data: {
-                images: {
-                    set: [], // Bestehende Beziehungen entfernen, ohne die Bilder zu löschen
-                },
-            },
-        });
+        // IDs der zu behaltenden Bilder sammeln
+        const imageIds = [];
+        for (const image of images) {
+            if (image.id) {
+                imageIds.push(image.id);
+            } else if (image.url && typeof image.url === "object" && image.url.id) {
+                imageIds.push(image.url.id);
+            }
+        }
 
-        // Hilfsfunktion zum Debuggen der Bilder
-        const debugImages = (imageData: any[]) => {
-            console.log("Anzahl der Bilder:", imageData.length);
+        console.log("Zu behaltende Bild-IDs:", imageIds);
 
-            imageData.forEach((img, index) => {
-                console.log(`Bild ${index + 1}:`, JSON.stringify(img));
-
-                if (img.id) {
-                    console.log(`- Hat ID: ${img.id}`);
-                }
-
-                if (img.url) {
-                    if (typeof img.url === "string") {
-                        console.log(`- Hat URL als String: ${img.url}`);
-                    } else if (typeof img.url === "object") {
-                        console.log(`- Hat URL als Objekt:`, JSON.stringify(img.url));
-                        if (img.url.id) {
-                            console.log(`  - URL-Objekt hat ID: ${img.url.id}`);
-                        }
-                    }
-                }
-            });
-        };
-        // Debug-Logs hinzufügen
-        console.log("Bild-Daten vor der Verarbeitung:", JSON.stringify(images));
-        debugImages(images);
-
-        // Komponente aktualisieren
+        // Komponente aktualisieren mit Erhalt der Bilder
         const updatedComponent = await prisma.component.update({
             where: { id },
             data: {
@@ -131,7 +113,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 description,
                 categoryId: finalCategoryId,
                 textBlocks: {
-                    deleteMany: {}, // Alle bestehenden TextBlocks löschen
                     create: textBlocks.map((block: { content: string; headline?: string; blockType?: string; language?: string }) => ({
                         content: block.content,
                         headline: block.headline || "",
@@ -139,27 +120,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                         language: block.language || "javascript",
                     })),
                 },
+                // Wichtig: Wir trennen nur Bilder, die nicht in der Liste sind
                 images: {
-                    connect: images
-                        .map((image: { id: any; url: { id: any } }) => {
-                            // Bild-ID extrahieren - entweder direkt oder aus dem URL-Objekt
-                            let imageId = null;
-
-                            if (image.id) {
-                                imageId = image.id;
-                            } else if (image.url && typeof image.url === "object" && image.url.id) {
-                                imageId = image.url.id;
-                            }
-
-                            if (imageId) {
-                                console.log(`Verbinde Bild mit ID: ${imageId}`);
-                                return { id: imageId };
-                            } else {
-                                console.warn("Ungültiges Bild-Format:", image);
-                                return null;
-                            }
-                        })
-                        .filter(Boolean), // Null-Werte entfernen
+                    set: imageIds.map((imgId) => ({ id: imgId })),
                 },
             },
             include: {
@@ -170,61 +133,78 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             },
         });
 
+        console.log("Aktualisierte Komponente mit Bildern:", updatedComponent.images.length);
+
         // Antwort zurückgeben
         return NextResponse.json(updatedComponent);
     } catch (error) {
         console.error("Fehler beim Aktualisieren der Komponente:", error);
-        return NextResponse.json({ message: "Interner Serverfehler" }, { status: 500 });
+        return NextResponse.json({ message: "Interner Serverfehler", error: String(error) }, { status: 500 });
     }
 }
+
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get("userId");
 
-        const images = await prisma.image.findMany({
-            where: { componentId: id },
-        });
+        console.log(`Löschversuch für Komponente ${id} von Benutzer ${userId}`);
 
         if (!userId) {
+            console.error("DELETE-Anfrage ohne userId");
             return NextResponse.json({ message: "Benutzer-ID ist erforderlich" }, { status: 400 });
         }
 
+        // Überprüfe zuerst, ob die Komponente existiert und dem Benutzer gehört
+        const existingComponent = await prisma.component.findFirst({
+            where: {
+                id,
+                userId,
+            },
+            include: {
+                images: true,
+            },
+        });
+
+        if (!existingComponent) {
+            console.error(`Komponente ${id} nicht gefunden oder gehört nicht Benutzer ${userId}`);
+            return NextResponse.json({ message: "Komponente nicht gefunden oder keine Berechtigung" }, { status: 404 });
+        }
+
+        console.log(`Komponente ${id} gefunden, gehört Benutzer ${userId}`);
+
+        // Lösche die Bilder-Verknüpfungen (nicht die Bilder selbst)
+        await prisma.component.update({
+            where: { id },
+            data: {
+                images: {
+                    set: [],
+                },
+            },
+        });
+
+        // Lösche die TextBlocks
+        await prisma.textBlock.deleteMany({
+            where: { componentId: id },
+        });
+
+        // Jetzt lösche die Komponente
         await prisma.component.delete({
             where: { id },
         });
 
-        for (const image of images) {
-            if (image.url && image.url.startsWith("/uploads/")) {
-                const fileName = image.url ? image.url.split("/").pop() : null;
-                if (!fileName) {
-                    console.error("Fehler: Dateiname ist undefiniert");
-                    continue;
-                }
-                const filePath = path.join(process.cwd(), "public", "uploads", fileName);
-                try {
-                    await fs.unlink(filePath);
-                    console.log(`Bild gelöscht: ${filePath}`);
-                } catch (err) {
-                    console.error(`Fehler beim Löschen des Bildes ${filePath}:`, err);
-                }
-            }
-        }
-
-        const existingComponent = await prisma.component.findFirst({
-            where: { id, userId },
-        });
-
-        if (!existingComponent) {
-            return NextResponse.json({ message: "Komponente nicht gefunden oder keine Berechtigung" }, { status: 404 });
-        }
-
-        await prisma.component.delete({ where: { id } });
+        console.log(`Komponente ${id} erfolgreich gelöscht`);
 
         return NextResponse.json({ message: "Komponente erfolgreich gelöscht" });
     } catch (error) {
         console.error("Fehler beim Löschen der Komponente:", error);
-        return NextResponse.json({ message: "Interner Serverfehler" }, { status: 500 });
+        return NextResponse.json(
+            {
+                message: "Interner Serverfehler",
+                error: String(error),
+            },
+            { status: 500 }
+        );
     }
 }
