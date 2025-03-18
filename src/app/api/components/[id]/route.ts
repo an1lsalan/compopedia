@@ -138,8 +138,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         });
 
         for (const image of images) {
-            if (image.url.startsWith("/uploads/")) {
-                const fileName = image.url.split("/").pop();
+            if (image.url && image.url.startsWith("/uploads/")) {
+                const fileName = image.url ? image.url.split("/").pop() : null;
                 if (!fileName) {
                     console.error("Fehler: Dateiname ist undefiniert");
                     continue;
