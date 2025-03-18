@@ -1,8 +1,8 @@
 // src/app/api/images/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
+export async function GET(context: { params: { id: string } }) {
     try {
         // Wichtig: Warte auf params in Next.js App Router
         const { id } = context.params;
