@@ -4,11 +4,14 @@ import { prisma } from "@/lib/prisma";
 
 import { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest,   { params }: { params: Promise<{ id: string }> }) {
     try {
         // Extract the id from the URL
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get("id");
+        
+        //const { searchParams } = new URL(request.url);
+        //const id = searchParams.get("id");
+        //console.log("id", id);
+        let { id } = await params;
 
         // Bild aus der Datenbank laden
         const image = await prisma.image.findUnique({
