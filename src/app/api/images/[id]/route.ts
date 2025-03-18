@@ -1,13 +1,14 @@
+/* eslint-disable prefer-const */
 // src/app/api/images/[id]/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 import { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest,   { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         // Extract the id from the URL
-        
+
         //const { searchParams } = new URL(request.url);
         //const id = searchParams.get("id");
         //console.log("id", id);
