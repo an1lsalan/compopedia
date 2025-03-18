@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Link from "next/link";
@@ -39,6 +40,28 @@ export default function ComponentsList({ components }: ComponentsListProps) {
         } finally {
             setIsDeleting(null);
         }
+    };
+
+    // Hilfsfunktion, um die korrekte Bild-URL zu ermitteln
+    const getImageUrl = (image: any): string => {
+        // Fall 1: URL ist ein String und beginnt mit /api/images/
+        if (typeof image.url === "string" && image.url.startsWith("/api/images/")) {
+            return image.url;
+        }
+        // Fall 2: URL ist ein Objekt mit ID
+        else if (image.url && typeof image.url === "object" && image.url.id) {
+            return `/api/images/${image.url.id}`;
+        }
+        // Fall 3: Legacy URL (direkter Pfad)
+        else if (typeof image.url === "string") {
+            return image.url;
+        }
+        // Fall 4: Bild hat eine ID, aber keine URL
+        else if (image.id) {
+            return `/api/images/${image.id}`;
+        }
+        // Fallback für unbekannte Formate
+        return "/placeholder.webp";
     };
 
     return (
@@ -84,7 +107,12 @@ export default function ComponentsList({ components }: ComponentsListProps) {
                                     <div className="flex items-center">
                                         <div className="h-10 w-10 flex-shrink-0 mr-3 relative bg-gray-100 rounded dark:bg-gray-800">
                                             {component.images && component.images.length > 0 ? (
-                                                <Image src={component.images[0].url} alt={component.title} fill className="object-cover rounded" />
+                                                <Image
+                                                    src={getImageUrl(component.images[0])}
+                                                    alt={component.title}
+                                                    fill
+                                                    className="object-cover rounded"
+                                                />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full w-full text-gray-400 dark:text-gray-600">
                                                     <svg
@@ -105,24 +133,31 @@ export default function ComponentsList({ components }: ComponentsListProps) {
                                             )}
                                         </div>
                                         <div>
-                                            <div className="text-sm font-medium text-gray-900">
+                                            <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                 <Link href={`/components/${component.id}`}>{component.title}</Link>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{component.category.name}</span>
+                                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                        {component.category?.name || "Keine Kategorie"}
+                                    </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(component.createdAt)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {formatDate(component.createdAt)}
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex justify-end space-x-4 items-center">
-                                        <Link href={`/dashboard/my-components/${component.id}/edit`} className="text-blue-600 hover:text-blue-900">
+                                        <Link
+                                            href={`/dashboard/my-components/${component.id}/edit`}
+                                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                        >
                                             Bearbeiten
                                         </Link>
                                         <Button
                                             onClick={() => handleDelete(component.id)}
-                                            className="text-red-600 hover:text-red-900"
+                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                             disabled={isDeleting === component.id}
                                         >
                                             {isDeleting === component.id ? "Löschen..." : "Löschen"}

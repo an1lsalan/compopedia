@@ -12,7 +12,8 @@
         "db:studio": "prisma studio",
         "db:migrate": "prisma migrate dev",
         "restart": "docker-compose down && docker-compose build && docker-compose up -d && sleep 5 && npm run db:update",
-        "db:update": "npx prisma migrate deploy && npx prisma generate"
+        "db:update": "npx prisma migrate deploy && npx prisma generate",
+        "db:push-with-binary": "npx prisma db push --accept-data-loss"
     },
     "dependencies": {
         "@hookform/resolvers": "^4.1.3",

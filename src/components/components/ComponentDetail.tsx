@@ -49,9 +49,40 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
     const [isMounted, setIsMounted] = useState(false);
     const [lightboxOpen, setLightboxOpen] = useState(false);
 
+    // Stelle sicher, dass die Bild-URLs korrekt sind
+    const processedImages = component.images.map((img) => {
+        // Wenn die URL bereits mit /api/images/ beginnt, verwende sie direkt
+        if (img.url && typeof img.url === "string" && img.url.startsWith("/api/images/")) {
+            return {
+                ...img,
+                url: img.url,
+            };
+        }
+        // Wenn die URL ein Objekt mit id ist (wie bei manchen Antworten)
+        else if (img.url && typeof img.url === "object" && (img.url as { id: string }).id) {
+            return {
+                ...img,
+                url: `/api/images/${(img.url as { id: string }).id}`,
+            };
+        }
+        // Bei Legacy-URLs (direkte Pfade) verwende sie unverändert
+        else if (img.url && typeof img.url === "string") {
+            return img;
+        }
+        // Wenn es keine URL gibt, aber eine ID, generiere die API-URL
+        else if (img.id) {
+            return {
+                ...img,
+                url: `/api/images/${img.id}`,
+            };
+        }
+        // Fallback
+        return img;
+    });
+
     // Für die Lightbox benötigen wir ein Array mit src-Eigenschaften
-    const lightboxImages = component.images.map((img) => ({
-        src: img.url,
+    const lightboxImages = processedImages.map((img) => ({
+        src: typeof img.url === "string" ? img.url : `/api/images/${img.id}`,
         alt: `Bild von ${component.title}`,
     }));
 
@@ -89,14 +120,6 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
         Prism.highlightAll();
     }, []);
 
-    // const nextImage = () => {
-    //     setCurrentImageIndex((prevIndex) => (prevIndex === component.images.length - 1 ? 0 : prevIndex + 1));
-    // };
-
-    // const prevImage = () => {
-    //     setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? component.images.length - 1 : prevIndex - 1));
-    // };
-
     const isOwner = session?.user?.id === component.userId;
 
     // Bestimme die entsprechende CSS-Klasse für Terminal-Blöcke
@@ -133,7 +156,7 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
                         <p>Aktualisiert am {formatDateTime(component.updatedAt)}</p>
                     )}
                 </div>
-                {component.images.length > 0 && (
+                {processedImages.length > 0 && (
                     <div className="mb-8">
                         {/* Swiper Slider */}
                         <div className="rounded-lg overflow-hidden mb-4 cursor-pointer" onClick={() => setLightboxOpen(true)}>
@@ -147,10 +170,15 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
                                 onSlideChange={(swiper) => setCurrentImageIndex(swiper.activeIndex)}
                                 className="h-96 w-full bg-gray-100 dark:bg-gray-700"
                             >
-                                {component.images.map((image, index) => (
-                                    <SwiperSlide key={image.id} className="relative h-full">
+                                {processedImages.map((image, index) => (
+                                    <SwiperSlide key={image.id || index} className="relative h-full">
                                         <div className="relative h-full w-full">
-                                            <Image src={image.url} alt={`Bild ${index + 1} von ${component.title}`} fill className="object-contain" />
+                                            <Image
+                                                src={typeof image.url === "string" ? image.url : `/api/images/${image.id}`}
+                                                alt={`Bild ${index + 1} von ${component.title}`}
+                                                fill
+                                                className="object-contain"
+                                            />
                                         </div>
                                     </SwiperSlide>
                                 ))}
@@ -158,7 +186,7 @@ export default function ComponentDetail({ component }: ComponentDetailProps) {
                         </div>
 
                         {/* Hinweis zum Vergrößern */}
-                        {component.images.length > 0 && (
+                        {processedImages.length > 0 && (
                             <p className="text-center text-sm text-gray-500 dark:text-gray-400">Klicke auf ein Bild, um es zu vergrößern</p>
                         )}
 

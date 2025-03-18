@@ -1,3 +1,4 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -52,10 +53,17 @@ model TextBlock {
 }
 
 model Image {
-  id          String    @id @default(cuid())
-  url         String
-  componentId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  url          String? // Legacy Feld für die frühere Implementierung
+  componentId  String? // Jetzt optional, damit Bilder ohne direkte Komponente erstellt werden können
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  component    Component? @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  // Neue Felder für die Datenbankbasierte Speicherung
+  data         Bytes? // Binärdaten des Bildes
+  mimeType     String? // Typ des Bildes (image/webp, etc.)
+  width        Int? // Breite des Bildes
+  height       Int? // Höhe des Bildes
+  size         Int? // Größe in Bytes
+  originalName String? // Ursprünglicher Dateiname
 }

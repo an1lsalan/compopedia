@@ -1,4 +1,6 @@
-// src/types/component.ts
+// src/types/index.ts
+// Aktualisiert für Datenbank-basierte Bildspeicherung
+
 export type Component = {
     id: string;
     title: string;
@@ -17,12 +19,11 @@ export type ComponentFormData = {
     title: string;
     description: string;
     categoryId: string;
-    categoryName?: string; // For creating a new category
+    categoryName?: string; // Für das Erstellen einer neuen Kategorie
     textBlocks: { content: string }[];
     images: File[];
 };
 
-// src/types/user.ts
 export type User = {
     id: string;
     name: string;
@@ -44,7 +45,6 @@ export type RegisterFormData = {
     confirmPassword: string;
 };
 
-// src/types/category.ts
 export type Category = {
     id: string;
     name: string;
@@ -53,25 +53,32 @@ export type Category = {
     components?: Component[];
 };
 
-// src/types/textblock.ts
 export type TextBlock = {
-    blockType: string;
-    headline: string;
     id: string;
     content: string;
     componentId: string;
+    blockType: string;
+    headline: string;
     language: string;
     createdAt: Date;
     updatedAt: Date;
 };
 
-// src/types/image.ts
+// Erweiterter Image-Typ für DB-Speicherung
 export type Image = {
     id: string;
-    url: string;
+    url?: string; // Legacy-Feld für Dateisystem-URLs
     componentId: string;
     createdAt: Date;
     updatedAt: Date;
+
+    // Neue Felder für DB-basierte Speicherung
+    data?: Uint8Array; // Binärdaten des Bildes (nicht in JSON-Antworten enthalten)
+    mimeType?: string; // Typ des Bildes (image/webp, etc.)
+    width?: number; // Breite in Pixeln
+    height?: number; // Höhe in Pixeln
+    size?: number; // Größe in Bytes
+    originalName?: string; // Ursprünglicher Dateiname
 };
 
 export type UpdateUserData = {

@@ -5,32 +5,28 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        ports:
-            - "3100:3000"
-        volumes:
-            - uploads-data:/app/public/uploads
+        restart: always
         environment:
-            - DATABASE_URL=postgresql://postgres:postgres@db:5432/compopedia?schema=public
-            - NEXTAUTH_URL=http://localhost:3100
-            - NEXTAUTH_SECRET=your-nextauth-secret-here # In Produktion mit einem sicheren Secret ersetzen
+            - DATABASE_URL=${DATABASE_URL}
+            - NEXTAUTH_URL=${NEXTAUTH_URL}
+            - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+            - NODE_ENV=production
         depends_on:
-            db:
-                condition: service_healthy
+            - db
         networks:
             - compopedia-network
-        restart: always
 
     db:
         image: postgres:15
+        restart: always
         environment:
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=postgres
-            - POSTGRES_DB=compopedia
+            - POSTGRES_USER=${DB_USER:-postgres}
+            - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+            - POSTGRES_DB=${DB_NAME:-compopedia}
         volumes:
             - postgres-data:/var/lib/postgresql/data
         networks:
             - compopedia-network
-        restart: always
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 5s
@@ -43,4 +39,3 @@ networks:
 
 volumes:
     postgres-data:
-    uploads-data:
