@@ -67,7 +67,7 @@ export type TextBlock = {
 // Erweiterter Image-Typ für DB-Speicherung
 export type Image = {
     id: string;
-    url?: string | undefined; // Legacy-URL (nicht in JSON-Antworten enthalten)
+    url?: string; // Legacy-URL (nicht in JSON-Antworten enthalten)
     componentId: string;
     createdAt: Date;
     updatedAt: Date;

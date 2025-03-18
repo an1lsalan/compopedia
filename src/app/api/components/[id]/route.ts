@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import path from "path";
@@ -56,6 +57,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         const body = await request.json();
         const { title, description, categoryId, categoryName, textBlocks, images, userId } = body;
 
+        // Überprüfen, ob die Komponente existiert und dem Benutzer gehört
         const existingComponent = await prisma.component.findFirst({
             where: { id, userId },
         });
@@ -64,8 +66,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             return NextResponse.json({ message: "Komponente nicht gefunden oder keine Berechtigung" }, { status: 404 });
         }
 
+        // Kategorie-ID bestimmen
         let finalCategoryId = categoryId;
-
         if (!categoryId && categoryName) {
             const existingCategory = await prisma.category.findUnique({
                 where: { name: categoryName },
@@ -81,9 +83,47 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             }
         }
 
+        // Bestehende TextBlocks löschen
         await prisma.textBlock.deleteMany({ where: { componentId: id } });
-        await prisma.image.deleteMany({ where: { componentId: id } });
 
+        // Vorhandene Bilder-Beziehungen entfernen, ohne die Bilder zu löschen
+        await prisma.component.update({
+            where: { id },
+            data: {
+                images: {
+                    set: [], // Bestehende Beziehungen entfernen, ohne die Bilder zu löschen
+                },
+            },
+        });
+
+        // Hilfsfunktion zum Debuggen der Bilder
+        const debugImages = (imageData: any[]) => {
+            console.log("Anzahl der Bilder:", imageData.length);
+
+            imageData.forEach((img, index) => {
+                console.log(`Bild ${index + 1}:`, JSON.stringify(img));
+
+                if (img.id) {
+                    console.log(`- Hat ID: ${img.id}`);
+                }
+
+                if (img.url) {
+                    if (typeof img.url === "string") {
+                        console.log(`- Hat URL als String: ${img.url}`);
+                    } else if (typeof img.url === "object") {
+                        console.log(`- Hat URL als Objekt:`, JSON.stringify(img.url));
+                        if (img.url.id) {
+                            console.log(`  - URL-Objekt hat ID: ${img.url.id}`);
+                        }
+                    }
+                }
+            });
+        };
+        // Debug-Logs hinzufügen
+        console.log("Bild-Daten vor der Verarbeitung:", JSON.stringify(images));
+        debugImages(images);
+
+        // Komponente aktualisieren
         const updatedComponent = await prisma.component.update({
             where: { id },
             data: {
@@ -91,6 +131,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 description,
                 categoryId: finalCategoryId,
                 textBlocks: {
+                    deleteMany: {}, // Alle bestehenden TextBlocks löschen
                     create: textBlocks.map((block: { content: string; headline?: string; blockType?: string; language?: string }) => ({
                         content: block.content,
                         headline: block.headline || "",
@@ -99,9 +140,26 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                     })),
                 },
                 images: {
-                    create: images.map((image: { url: string }) => ({
-                        url: image.url,
-                    })),
+                    connect: images
+                        .map((image: { id: any; url: { id: any } }) => {
+                            // Bild-ID extrahieren - entweder direkt oder aus dem URL-Objekt
+                            let imageId = null;
+
+                            if (image.id) {
+                                imageId = image.id;
+                            } else if (image.url && typeof image.url === "object" && image.url.id) {
+                                imageId = image.url.id;
+                            }
+
+                            if (imageId) {
+                                console.log(`Verbinde Bild mit ID: ${imageId}`);
+                                return { id: imageId };
+                            } else {
+                                console.warn("Ungültiges Bild-Format:", image);
+                                return null;
+                            }
+                        })
+                        .filter(Boolean), // Null-Werte entfernen
                 },
             },
             include: {
@@ -112,13 +170,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             },
         });
 
+        // Antwort zurückgeben
         return NextResponse.json(updatedComponent);
     } catch (error) {
         console.error("Fehler beim Aktualisieren der Komponente:", error);
         return NextResponse.json({ message: "Interner Serverfehler" }, { status: 500 });
     }
 }
-
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
