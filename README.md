@@ -69,7 +69,7 @@ docker run -d -p 5432:5432 --name compopedia-db \
 
 ```bash
 # Startet sowohl die Datenbank als auch die Anwendung
-docker-compose up -d
+docker compose up -d
 ```
 
 **Option C: Lokale PostgreSQL-Installation:**
